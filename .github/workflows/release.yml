@@ -37,34 +37,38 @@ jobs:
             PRE_RELEASE_NUMBER="${BASH_REMATCH[2]}"
             PRE_RELEASE_TYPE="${BASH_REMATCH[3]}"
 
-            IFS='.' read -r -a VERSION_PARTS <<< "$BASE_VERSION"
+            IFS=\'\'.\' read -r -a VERSION_PARTS <<< "$BASE_VERSION"
             MAJOR=${VERSION_PARTS[0]}
             MINOR=${VERSION_PARTS[1]}
             PATCH=${VERSION_PARTS[2]}
 
             NEXT_PRE_RELEASE_NUMBER=$((PRE_RELEASE_NUMBER + 1))
-            NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}.${NEXT_PRE_RELEASE_NUMBER}${PRE_RELEASE_TYPE}"
+            NEXT_MANIFEST_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+            NEXT_RELEASE_TAG="${MAJOR}.${MINOR}.${PATCH}.${NEXT_PRE_RELEASE_NUMBER}${PRE_RELEASE_TYPE}"
           elif [[ $CURRENT_VERSION =~ ^([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
             BASE_VERSION="${BASH_REMATCH[1]}"
-            IFS='.' read -r -a VERSION_PARTS <<< "$BASE_VERSION"
+            IFS=\'\'.\' read -r -a VERSION_PARTS <<< "$BASE_VERSION"
             MAJOR=${VERSION_PARTS[0]}
             MINOR=${VERSION_PARTS[1]}
             PATCH=${VERSION_PARTS[2]}
 
             NEXT_PATCH=$((PATCH + 1))
-            NEXT_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}"
+            NEXT_MANIFEST_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}"
+            NEXT_RELEASE_TAG="${MAJOR}.${MINOR}.${NEXT_PATCH}"
           else
             echo "Error: Invalid version format in manifest.json"
             exit 1
           fi
 
-          echo "Next version: $NEXT_VERSION"
-          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "Next manifest version: $NEXT_MANIFEST_VERSION"
+          echo "Next release tag: $NEXT_RELEASE_TAG"
+          echo "NEXT_MANIFEST_VERSION=$NEXT_MANIFEST_VERSION" >> $GITHUB_OUTPUT
+          echo "NEXT_RELEASE_TAG=$NEXT_RELEASE_TAG" >> $GITHUB_OUTPUT
 
       - name: Update manifest.json with new version
         run: |
           MANIFEST_PATH="custom_components/trackimo/manifest.json"
-          jq --arg new_version "${{ steps.get_version.outputs.NEXT_VERSION }}" '.version = $new_version' $MANIFEST_PATH > "$MANIFEST_PATH.tmp" && mv "$MANIFEST_PATH.tmp" $MANIFEST_PATH
+          jq --arg new_version "${{ steps.get_version.outputs.NEXT_MANIFEST_VERSION }}" ".version = $new_version" $MANIFEST_PATH > "$MANIFEST_PATH.tmp" && mv "$MANIFEST_PATH.tmp" $MANIFEST_PATH
           cat $MANIFEST_PATH # For debugging
 
       - name: Commit and Push new version
@@ -72,16 +76,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add custom_components/trackimo/manifest.json
-          git commit -m "chore: Bump version to ${{ steps.get_version.outputs.NEXT_VERSION }}"
+          git commit -m "chore: Bump version to ${{ steps.get_version.outputs.NEXT_MANIFEST_VERSION }}"
           git push
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.get_version.outputs.NEXT_VERSION }}
-          name: Release ${{ steps.get_version.outputs.NEXT_VERSION }}
+          tag_name: ${{ steps.get_version.outputs.NEXT_RELEASE_TAG }}
+          name: Release ${{ steps.get_version.outputs.NEXT_RELEASE_TAG }}
           body: |
-            Automated release for version ${{ steps.get_version.outputs.NEXT_VERSION }}
-          prerelease: ${{ contains(steps.get_version.outputs.NEXT_VERSION, '-alpha') || contains(steps.get_version.outputs.NEXT_VERSION, '-beta') || contains(steps.get_version.outputs.NEXT_VERSION, '-rc') }}
+            Automated release for version ${{ steps.get_version.outputs.NEXT_RELEASE_TAG }}
+          prerelease: ${{ contains(steps.get_version.outputs.NEXT_RELEASE_TAG, "-alpha") || contains(steps.get_version.outputs.NEXT_RELEASE_TAG, "-beta") || contains(steps.get_version.outputs.NEXT_RELEASE_TAG, "-rc") }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
