@@ -3,8 +3,12 @@
   "name": "Trackimo",
   "documentation": "https://github.com/tuxedoArmy/trackimo-hass",
   "issue_tracker": "https://github.com/tuxedoArmy/trackimo-hass/issues",
-  "codeowners": ["@tuxedoArmy"],
-  "version": "0.0.3.1-alpha",
-  "requirements": ["requests>=2.32.0"],
+  "codeowners": [
+    "@tuxedoArmy"
+  ],
+  "version": "0.0.3.2-alpha",
+  "requirements": [
+    "requests>=2.32.0"
+  ],
   "supports_entry_point": true
 }
