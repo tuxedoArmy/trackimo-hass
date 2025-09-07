@@ -8,6 +8,8 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Grant write permission to the GITHUB_TOKEN for contents
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
