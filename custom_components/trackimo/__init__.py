@@ -34,7 +34,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.async_create_task(
         hass.config_entries.flow.async_init(
             DOMAIN,
-            context={"source": "import"},
+            context={"source": config_entries.SOURCE_IMPORT},
             data=config[DOMAIN],
         )
     )
@@ -45,10 +45,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Trackimo from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
-    api_client = TrackimoApiClient(entry.data["username"], entry.data["password"])
-    if not await hass.async_add_executor_job(api_client.get_access_token):
-        return False
-    if not await hass.async_add_executor_job(api_client.get_user_details):
+    api_client = TrackimoApiClient(entry.data["username"], entry.data["password"], debug=True)
+    try:
+        if not await hass.async_add_executor_job(api_client.get_access_token):
+            _LOGGER.error("Failed to get access token")
+            return False
+        if not await hass.async_add_executor_job(api_client.get_user_details):
+            _LOGGER.error("Failed to get user details")
+            return False
+    except Exception as e:
+        _LOGGER.error("Error during API client setup: %s", e)
         return False
 
     hass.data[DOMAIN][entry.entry_id] = api_client
