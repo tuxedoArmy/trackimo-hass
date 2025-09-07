@@ -5,23 +5,22 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorStateClass,
 )
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 from .const import DOMAIN
 from .api import TrackimoApiClient
 
-def setup_platform(
+async def async_setup_entry(
     hass: HomeAssistant,
-    config: ConfigType,
-    add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the sensor platform."""
-    api_client = hass.data[DOMAIN][config.entry_id]
-    devices = api_client.get_devices()
-    add_entities([TrackimoBatterySensor(api_client, device) for device in devices])
+    api_client = hass.data[DOMAIN][config_entry.entry_id]
+    devices = await hass.async_add_executor_job(api_client.get_devices)
+    async_add_entities([TrackimoBatterySensor(api_client, device) for device in devices])
 
 
 class TrackimoBatterySensor(SensorEntity):
