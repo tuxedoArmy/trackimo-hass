@@ -1,0 +1,86 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for versioning
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install requests jq # requests is needed for the API client, jq for JSON processing
+
+      - name: Get current version and calculate next version
+        id: get_version
+        run: |
+          MANIFEST_PATH="custom_components/trackimo/manifest.json"
+          CURRENT_VERSION=$(jq -r '.version' $MANIFEST_PATH)
+          echo "Current version: $CURRENT_VERSION"
+
+          # Extract base version and pre-release tag
+          if [[ $CURRENT_VERSION =~ ^([0-9]+\.[0-9]+\.[0-9]+)(\-alpha|\-beta|\-rc)?([0-9]+)?$ ]]; then
+            BASE_VERSION="${BASH_REMATCH[1]}"
+            PRE_RELEASE_TYPE="${BASH_REMATCH[2]}"
+            PRE_RELEASE_NUMBER="${BASH_REMATCH[3]}"
+
+            IFS='.' read -r -a VERSION_PARTS <<< "$BASE_VERSION"
+            MAJOR=${VERSION_PARTS[0]}
+            MINOR=${VERSION_PARTS[1]}
+            PATCH=${VERSION_PARTS[2]}
+
+            if [[ -n "$PRE_RELEASE_TYPE" ]]; then
+              if [[ -n "$PRE_RELEASE_NUMBER" ]]; then
+                NEXT_PRE_RELEASE_NUMBER=$((PRE_RELEASE_NUMBER + 1))
+              else
+                NEXT_PRE_RELEASE_NUMBER=1
+              fi
+              NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}${PRE_RELEASE_TYPE}${NEXT_PRE_RELEASE_NUMBER}"
+            else
+              # If no pre-release, just increment patch
+              NEXT_PATCH=$((PATCH + 1))
+              NEXT_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}"
+            fi
+          else
+            echo "Error: Invalid version format in manifest.json"
+            exit 1
+          fi
+
+          echo "Next version: $NEXT_VERSION"
+          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update manifest.json with new version
+        run: |
+          MANIFEST_PATH="custom_components/trackimo/manifest.json"
+          jq --arg new_version "${{ steps.get_version.outputs.NEXT_VERSION }}" '.version = $new_version' $MANIFEST_PATH > "$MANIFEST_PATH.tmp" && mv "$MANIFEST_PATH.tmp" $MANIFEST_PATH
+          cat $MANIFEST_PATH # For debugging
+
+      - name: Commit and Push new version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add custom_components/trackimo/manifest.json
+          git commit -m "chore: Bump version to ${{ steps.get_version.outputs.NEXT_VERSION }}"
+          git push
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.NEXT_VERSION }}
+          name: Release ${{ steps.get_version.outputs.NEXT_VERSION }}
+          body: |
+            Automated release for version ${{ steps.get_version.outputs.NEXT_VERSION }}
+          prerelease: ${{ contains(steps.get_version.outputs.NEXT_VERSION, '-alpha') || contains(steps.get_version.outputs.NEXT_VERSION, '-beta') || contains(steps.get_version.outputs.NEXT_VERSION, '-rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
