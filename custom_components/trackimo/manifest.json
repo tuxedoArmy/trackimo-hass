@@ -1,0 +1,9 @@
+{
+  "domain": "trackimo",
+  "name": "Trackimo",
+  "documentation": "https://github.com/tuxedoArmy/trackimo-hass",
+  "issue_tracker": "https://github.com/tuxedoArmy/trackimo-hass/issues",
+  "codeowners": ["@tuxedoArmy"],
+  "version": "0.1.0",
+  "requirements": ["requests==2.32.5"]
+}
