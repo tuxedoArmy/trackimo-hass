@@ -48,3 +48,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
+
+    async def async_step_import(self, import_config: dict[str, Any]) -> FlowResult:
+        """Handle a config flow initiated by a configuration.yaml entry."""
+        return await self.async_step_user(import_config)
