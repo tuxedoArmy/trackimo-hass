@@ -10,5 +10,6 @@
   "requirements": [
     "requests>=2.32.0"
   ],
-  "supports_entry_point": true
+  "supports_entry_point": true,
+  "_dummy": "1"
 }
