@@ -37,7 +37,7 @@ jobs:
             PRE_RELEASE_NUMBER="${BASH_REMATCH[2]}"
             PRE_RELEASE_TYPE="${BASH_REMATCH[3]}"
 
-            IFS=\'\'.\' read -r -a VERSION_PARTS <<< "$BASE_VERSION"
+            IFS='.' read -r -a VERSION_PARTS <<< "$BASE_VERSION"
             MAJOR=${VERSION_PARTS[0]}
             MINOR=${VERSION_PARTS[1]}
             PATCH=${VERSION_PARTS[2]}
@@ -47,7 +47,7 @@ jobs:
             NEXT_RELEASE_TAG="${MAJOR}.${MINOR}.${PATCH}.${NEXT_PRE_RELEASE_NUMBER}${PRE_RELEASE_TYPE}"
           elif [[ $CURRENT_VERSION =~ ^([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
             BASE_VERSION="${BASH_REMATCH[1]}"
-            IFS=\'\'.\' read -r -a VERSION_PARTS <<< "$BASE_VERSION"
+            IFS='.' read -r -a VERSION_PARTS <<< "$BASE_VERSION"
             MAJOR=${VERSION_PARTS[0]}
             MINOR=${VERSION_PARTS[1]}
             PATCH=${VERSION_PARTS[2]}
@@ -68,7 +68,7 @@ jobs:
       - name: Update manifest.json with new version
         run: |
           MANIFEST_PATH="custom_components/trackimo/manifest.json"
-          jq --arg new_version "${{ steps.get_version.outputs.NEXT_MANIFEST_VERSION }}" ".version = $new_version" $MANIFEST_PATH > "$MANIFEST_PATH.tmp" && mv "$MANIFEST_PATH.tmp" $MANIFEST_PATH
+          jq --arg new_version "${{ steps.get_version.outputs.NEXT_MANIFEST_VERSION }}" '.version = $new_version' $MANIFEST_PATH > "$MANIFEST_PATH.tmp" && mv "$MANIFEST_PATH.tmp" $MANIFEST_PATH
           cat $MANIFEST_PATH # For debugging
 
       - name: Commit and Push new version
