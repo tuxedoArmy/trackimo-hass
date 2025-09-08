@@ -45,7 +45,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Trackimo from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
-    api_client = TrackimoApiClient(entry.data["username"], entry.data["password"], hass)
+    api_client = TrackimoApiClient(entry.data["username"], entry.data["password"], hass, debug=True)
     try:
         if not await api_client.async_get_access_token():
             _LOGGER.error("Failed to get access token")
