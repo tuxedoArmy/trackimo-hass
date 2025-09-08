@@ -36,6 +36,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle the initial step."""
         errors: dict[str, str] = {}
         if user_input is not None:
+            _LOGGER.debug("async_step_user called with user_input: %s", user_input)
             api_client = TrackimoApiClient(user_input["username"], user_input["password"], self.hass)
             try:
                 if not await api_client.async_get_access_token():
