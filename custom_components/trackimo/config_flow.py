@@ -36,7 +36,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle the initial step."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            api_client = TrackimoApiClient(user_input["username"], user_input["password"])
+            api_client = TrackimoApiClient(user_input["username"], user_input["password"], self.hass)
             try:
                 if not await self.hass.async_add_executor_job(api_client.get_access_token):
                     raise HomeAssistantError("Invalid credentials")
