@@ -43,6 +43,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Trackimo from a config entry."""
+    _LOGGER.debug("async_setup_entry called for entry: %s", entry.entry_id)
     hass.data.setdefault(DOMAIN, {})
 
     api_client = TrackimoApiClient(entry.data["username"], entry.data["password"], hass, debug=True)
