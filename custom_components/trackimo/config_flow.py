@@ -28,11 +28,6 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Trackimo."""
 
-    def __init__(self) -> None:
-        """Initialize config flow."""
-        _LOGGER.debug("ConfigFlow __init__ called")
-        super().__init__()
-
     VERSION = 1
 
     async def async_step_user(
