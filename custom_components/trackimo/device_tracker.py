@@ -16,7 +16,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up the device_tracker platform."""
     api_client = hass.data[DOMAIN][config_entry.entry_id]
-    devices = await hass.async_add_executor_job(api_client.get_devices)
+    devices = await api_client.async_get_devices()
     async_add_entities([TrackimoDeviceTracker(api_client, device) for device in devices])
 
 
@@ -39,15 +39,15 @@ class TrackimoDeviceTracker(TrackerEntity):
         return self.device["deviceName"]
 
     @property
-    def latitude(self) -> float | None:
+    async def async_latitude(self) -> float | None:
         """Return latitude value of the device."""
-        location = self.api_client.get_device_last_location(self.device["deviceId"])
+        location = await self.api_client.async_get_device_last_location(self.device["deviceId"])
         return location["lat"] if location else None
 
     @property
-    def longitude(self) -> float | None:
+    async def async_longitude(self) -> float | None:
         """Return longitude value of the device."""
-        location = self.api_client.get_device_last_location(self.device["deviceId"])
+        location = await self.api_client.async_get_device_last_location(self.device["deviceId"])
         return location["lng"] if location else None
 
     @property

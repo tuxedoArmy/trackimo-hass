@@ -19,7 +19,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up the sensor platform."""
     api_client = hass.data[DOMAIN][config_entry.entry_id]
-    devices = await hass.async_add_executor_job(api_client.get_devices)
+    devices = await api_client.async_get_devices()
     async_add_entities([TrackimoBatterySensor(api_client, device) for device in devices])
 
 
@@ -42,9 +42,9 @@ class TrackimoBatterySensor(SensorEntity):
         return f"{self.device['deviceName']} Battery"
 
     @property
-    def native_value(self) -> int | None:
+    async def async_native_value(self) -> int | None:
         """Return the state of the sensor."""
-        location = self.api_client.get_device_last_location(self.device["deviceId"])
+        location = await self.api_client.async_get_device_last_location(self.device["deviceId"])
         return location["battery"] if location else None
 
     @property
