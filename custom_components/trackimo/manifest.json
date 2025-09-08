@@ -6,7 +6,7 @@
   "codeowners": [
     "@tuxedoArmy"
   ],
-  "version": "0.0.12",
+  "version": "0.0.13",
   "requirements": [
     "requests>=2.32.0"
   ],
