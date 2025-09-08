@@ -38,7 +38,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             api_client = TrackimoApiClient(user_input["username"], user_input["password"], self.hass)
             try:
-                if not await api_client.async_get_access_token():
+                                if not await api_client.async_get_access_token():
                     raise HomeAssistantError("Invalid credentials")
             except HomeAssistantError:
                 errors["base"] = "invalid_auth"
