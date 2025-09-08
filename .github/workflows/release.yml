@@ -86,6 +86,6 @@ jobs:
           name: Release ${{ steps.get_version.outputs.NEXT_RELEASE_TAG }}
           body: |
             Automated release for version ${{ steps.get_version.outputs.NEXT_RELEASE_TAG }}
-          prerelease: ${{ contains(steps.get_version.outputs.NEXT_RELEASE_TAG, "-alpha") || contains(steps.get_version.outputs.NEXT_RELEASE_TAG, "-beta") || contains(steps.get_version.outputs.NEXT_RELEASE_TAG, "-rc") }}
+          prerelease: ${{ contains(steps.get_version.outputs.NEXT_RELEASE_TAG, '-alpha') || contains(steps.get_version.outputs.NEXT_RELEASE_TAG, '-beta') || contains(steps.get_version.outputs.NEXT_RELEASE_TAG, '-rc') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
